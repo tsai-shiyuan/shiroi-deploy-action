@@ -1,6 +1,7 @@
 name: Build and Deploy
 
 on:
+  workflow_dispatch: # 增加了工作流的手动运行
   push:
     branches:
       - main
@@ -81,7 +82,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: innei-dev/shiroi
+          repository: innei-dev/shiroi # 需要访问的仓库
           token: ${{ secrets.GH_PAT }} # `GH_PAT` is a secret that contains your PAT
           fetch-depth: 0
           lfs: true
@@ -166,8 +167,10 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             set -e
+            export NVM_DIR=~/.nvm  # 定义.nvm 的安装目录
+            source ~/.nvm/nvm.sh  # 识别nvm命令            
             source $HOME/.bashrc
-            basedir=$HOME/shiro
+            basedir=/opt/mx-space/shiro  # 路径
             workdir=$basedir/${{ github.run_number }}
             mkdir -p $workdir
             mkdir -p $basedir/.cache
@@ -176,7 +179,7 @@ jobs:
             cd $workdir
             unzip -qq -o $workdir/release.zip
             rm -rf $workdir/standalone/.env
-            ln -s $HOME/shiro/.env $workdir/standalone/.env
+            ln -s $workdir/.env $workdir/standalone/.env  # .env 文件路径
             export NEXT_SHARP_PATH=$(npm root -g)/sharp
             # copy workdir ecosystem.config.js to basedir if not exists
             if [ ! -f $basedir/ecosystem.config.js ]; then
